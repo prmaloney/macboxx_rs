@@ -9,9 +9,16 @@ use std::{env, ffi::CString, fs, io::Write, path::Path};
 fn create_pipe(slippi_path: &Path) -> fs::File {
     let pipe_dir = slippi_path.join("Pipes");
     let pipe_path = pipe_dir.join("macboxx");
+    if pipe_path.exists() {
+        return fs::File::create(&pipe_path).unwrap();
+    }
+
+    std::fs::create_dir_all(&pipe_dir).unwrap();
     let pipe_filename = CString::new(pipe_path.to_str().unwrap().as_bytes()).unwrap();
     unsafe {
-        mkfifo(pipe_filename.as_ptr(), 0o777);
+        if mkfifo(pipe_filename.as_ptr(), 0444) != 0 {
+            panic!("failed to make fifo");
+        }
     }
 
     println!("writing to {:?}", &pipe_path);
