@@ -1,0 +1,27 @@
+[buttons]
+A = 'j'
+B = 'o'
+X = 'k'
+Y = '/'
+Z = 'i'
+START = 'Enter'
+DPAD_UP = 'w'
+DPAD_DOWN = 's'
+DPAD_LEFT = 'a'
+DPAD_RIGHT = 'd'
+
+[control_stick]
+UP = 'w'
+DOWN = 's'
+LEFT = 'a'
+RIGHT = 'd'
+
+[c_stick]
+UP = ';'
+DOWN = ','
+LEFT = 'n'
+RIGHT = 'l'
+
+[triggers]
+L = 'q'
+R = ' ' # space
