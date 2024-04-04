@@ -4,7 +4,10 @@ use keycodes::Stringable;
 use libc::mkfifo;
 use rdev::{listen, Event, EventType};
 use serde_derive::Deserialize;
-use std::{env, ffi::CString, fs, io::Write, path::Path};
+use std::{env, ffi::CString, fmt::Display, fs, io::Write, path::Path};
+
+const MOD_X_FACTOR: f32 = 0.5;
+const MOD_Y_FACTOR: f32 = 0.5;
 
 fn create_pipe(slippi_path: &Path) -> fs::File {
     let pipe_dir = slippi_path.join("Pipes");
@@ -21,7 +24,6 @@ fn create_pipe(slippi_path: &Path) -> fs::File {
         }
     }
 
-    println!("writing to {:?}", &pipe_path);
     fs::File::create(&pipe_path).unwrap()
 }
 
@@ -79,12 +81,22 @@ struct Keymap {
     control_stick: std::collections::HashMap<String, String>,
     c_stick: std::collections::HashMap<String, String>,
     triggers: std::collections::HashMap<String, String>,
+    mods: std::collections::HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Copy)]
 enum StickKind {
     Control,
     C,
+}
+
+impl Display for StickKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            StickKind::Control => write!(f, "MAIN"),
+            StickKind::C => write!(f, "C"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -97,14 +109,18 @@ struct Controller {
     pipe: fs::File,
     control_stick: Stick,
     c_stick: Stick,
+    mod_x: bool,
+    mod_y: bool,
 }
 
 impl Controller {
     fn new(pipe: fs::File) -> Controller {
         Controller {
             pipe,
-            control_stick: Stick { x: 0.5, y: 0.5 },
-            c_stick: Stick { x: 0.5, y: 0.5 },
+            control_stick: Stick { x: 0.0, y: 0.0 },
+            c_stick: Stick { x: 0.0, y: 0.0 },
+            mod_x: false,
+            mod_y: false,
         }
     }
 
@@ -120,50 +136,135 @@ impl Controller {
             .write(format!("RELEASE {}\n", button.to_string()).as_bytes());
     }
 
+    fn press_trigger(&mut self, trigger: &str) {
+        let _ = self
+            .pipe
+            .write(format!("PRESS {}\n", trigger.to_string()).as_bytes());
+    }
+
+    fn release_trigger(&mut self, trigger: &str) {
+        let _ = self
+            .pipe
+            .write(format!("RELEASE {}\n", trigger.to_string()).as_bytes());
+    }
+
+    fn press_mod(&mut self, axis: &str) {
+        match axis {
+            "MOD_X" => {
+                self.mod_x = true;
+            }
+            "MOD_Y" => {
+                self.mod_y = true;
+            }
+            _ => {
+                println!("Unknown axis: {}", axis)
+            }
+        }
+        self.write_stick(StickKind::Control, self.control_stick);
+    }
+
+    fn release_mod(&mut self, axis: &str) {
+        match axis {
+            "MOD_X" => {
+                self.mod_x = false;
+            }
+            "MOD_Y" => {
+                self.mod_y = false;
+            }
+            _ => {
+                println!("Unknown axis: {}", axis)
+            }
+        };
+        self.write_stick(StickKind::Control, self.control_stick);
+    }
+
+    fn convert_coords(coord: f32) -> f32 {
+        (coord + 1.0) / 2.0
+    }
+
+    fn write_stick(&mut self, stick: StickKind, stick_data: Stick) {
+        match stick {
+            StickKind::Control => {
+                let x = Self::convert_coords({
+                    if self.mod_x {
+                        stick_data.x * MOD_X_FACTOR
+                    } else {
+                        stick_data.x
+                    }
+                });
+                let y = Self::convert_coords({
+                    if self.mod_y {
+                        stick_data.y * MOD_Y_FACTOR
+                    } else {
+                        stick_data.y
+                    }
+                });
+                self.pipe
+                    .write(format!("SET {} {} {}\n", stick, x, y).as_bytes())
+                    .unwrap();
+            }
+            StickKind::C => {
+                self.pipe
+                    .write(
+                        format!(
+                            "SET {} {} {}\n",
+                            stick,
+                            Self::convert_coords(stick_data.x),
+                            Self::convert_coords(stick_data.y)
+                        )
+                        .as_bytes(),
+                    )
+                    .unwrap();
+            }
+        }
+    }
+
     // TODO: adjust all this logic
-    fn tilt_stick(&mut self, stick: StickKind, direction: &str, mod_x: bool, mod_y: bool) {
+    fn tilt_stick(&mut self, stick: StickKind, direction: &str) {
         match stick {
             StickKind::Control => {
                 self.control_stick = match direction {
-                    "up" => Stick {
+                    "UP" => Stick {
+                        y: 1.0,
                         x: self.control_stick.x,
-                        y: self.control_stick.y + 0.01,
                     },
-                    "down" => Stick {
+                    "DOWN" => Stick {
+                        y: -1.0,
                         x: self.control_stick.x,
-                        y: self.control_stick.y - 0.01,
                     },
-                    "left" => Stick {
-                        x: self.control_stick.x - 0.01,
+                    "LEFT" => Stick {
+                        x: -1.0,
                         y: self.control_stick.y,
                     },
-                    "right" => Stick {
-                        x: self.control_stick.x + 0.01,
+                    "RIGHT" => Stick {
+                        x: 1.0,
                         y: self.control_stick.y,
                     },
                     _ => self.control_stick,
-                }
+                };
+                self.write_stick(StickKind::Control, self.control_stick);
             }
             StickKind::C => {
                 self.c_stick = match direction {
-                    "up" => Stick {
+                    "UP" => Stick {
                         x: self.c_stick.x,
-                        y: self.c_stick.y + 0.01,
+                        y: 1.0,
                     },
-                    "down" => Stick {
+                    "DOWN" => Stick {
                         x: self.c_stick.x,
-                        y: self.c_stick.y - 0.01,
+                        y: -1.0,
                     },
-                    "left" => Stick {
-                        x: self.c_stick.x - 0.01,
+                    "LEFT" => Stick {
+                        x: -1.0,
                         y: self.c_stick.y,
                     },
-                    "right" => Stick {
-                        x: self.c_stick.x + 0.01,
+                    "RIGHT" => Stick {
+                        x: 1.0,
                         y: self.c_stick.y,
                     },
                     _ => self.c_stick,
-                }
+                };
+                self.write_stick(StickKind::C, self.c_stick);
             }
         }
     }
@@ -172,46 +273,56 @@ impl Controller {
         match stick {
             StickKind::Control => {
                 self.control_stick = match direction {
-                    "up" => Stick {
+                    "UP" => Stick {
                         x: self.control_stick.x,
-                        y: self.control_stick.y - 0.01,
+                        y: 0.0,
                     },
-                    "down" => Stick {
+                    "DOWN" => Stick {
                         x: self.control_stick.x,
-                        y: self.control_stick.y + 0.01,
+                        y: 0.0,
                     },
-                    "left" => Stick {
-                        x: self.control_stick.x + 0.01,
+                    "LEFT" => Stick {
+                        x: if self.control_stick.x > 0.0 {
+                            self.control_stick.x
+                        } else {
+                            0.0
+                        },
                         y: self.control_stick.y,
                     },
-                    "right" => Stick {
-                        x: self.control_stick.x - 0.01,
+                    "RIGHT" => Stick {
+                        x: if self.control_stick.x < 0.0 {
+                            self.control_stick.x
+                        } else {
+                            0.0
+                        },
                         y: self.control_stick.y,
                     },
                     _ => self.control_stick,
-                }
+                };
+                self.write_stick(StickKind::Control, self.control_stick);
             }
 
             StickKind::C => {
-                self.control_stick = match direction {
-                    "up" => Stick {
-                        x: self.control_stick.x,
-                        y: self.control_stick.y - 0.01,
+                self.c_stick = match direction {
+                    "UP" => Stick {
+                        x: self.c_stick.x,
+                        y: 0.0,
                     },
-                    "down" => Stick {
-                        x: self.control_stick.x,
-                        y: self.control_stick.y + 0.01,
+                    "DOWN" => Stick {
+                        x: self.c_stick.x,
+                        y: 0.0,
                     },
-                    "left" => Stick {
-                        x: self.control_stick.x + 0.01,
-                        y: self.control_stick.y,
+                    "LEFT" => Stick {
+                        x: 0.0,
+                        y: self.c_stick.y,
                     },
-                    "right" => Stick {
-                        x: self.control_stick.x - 0.01,
-                        y: self.control_stick.y,
+                    "RIGHT" => Stick {
+                        x: 0.0,
+                        y: self.c_stick.y,
                     },
-                    _ => self.control_stick,
-                }
+                    _ => self.c_stick,
+                };
+                self.write_stick(StickKind::C, self.c_stick);
             }
         }
     }
@@ -227,7 +338,7 @@ fn main() {
 
     let pipe = create_pipe(&Path::new(&slippi_path).join("User"));
 
-    let mut buttons_held: Vec<String> = vec![];
+    let mut keys_held: Vec<String> = vec![];
 
     let keymap_file_contents = match fs::read_to_string("keymap.toml") {
         Ok(contents) => contents,
@@ -259,13 +370,17 @@ fn main() {
                 .iter()
                 .map(|(k, v)| (v.to_string(), k.to_string()))
                 .collect(),
+            mods: k
+                .mods
+                .iter()
+                .map(|(k, v)| (v.to_string(), k.to_string()))
+                .collect(),
         },
         Err(_) => {
             eprintln!("Could not parse keymap.toml");
             std::process::exit(1);
         }
     };
-    println!("read keymap from file, {:?}", keymap);
 
     let mut controller = Controller::new(pipe);
 
@@ -273,34 +388,54 @@ fn main() {
         match event.event_type {
             EventType::KeyPress(key) => {
                 let key_str = key.as_string();
+                if keys_held.contains(&key_str) {
+                    return;
+                }
                 // see if we pressed a button
+                keys_held.push(key_str.clone());
                 match keymap.buttons.get(&key_str) {
                     Some(button) => {
-                        if buttons_held.contains(&button) {
-                            return;
-                        }
-                        buttons_held.push(button.to_string());
                         controller.press_button(button);
                     }
                     None => {}
                 }
 
+                // see if we pressed the control stick
                 match keymap.control_stick.get(&key_str) {
                     Some(dir) => {
-                        controller.tilt_stick(StickKind::Control, dir, false, false);
+                        controller.tilt_stick(StickKind::Control, dir);
                     }
                     None => {}
                 }
 
+                // see if we pressed the c stick
                 match keymap.c_stick.get(&key_str) {
                     Some(dir) => {
-                        controller.tilt_stick(StickKind::C, dir, false, false);
+                        controller.tilt_stick(StickKind::C, dir);
+                    }
+                    None => {}
+                }
+
+                // see if we pressed a trigger
+                match keymap.triggers.get(&key_str) {
+                    Some(trigger) => {
+                        controller.press_trigger(trigger);
+                    }
+                    None => {}
+                }
+
+                // see if we pressed a modifier
+                match keymap.mods.get(&key_str) {
+                    Some(modifier) => {
+                        controller.press_mod(modifier);
                     }
                     None => {}
                 }
             }
+
             EventType::KeyRelease(key) => {
                 let key_str = key.as_string();
+                keys_held.retain(|k| k != &key_str);
                 match keymap.buttons.get(&key_str) {
                     Some(button) => {
                         controller.release_button(button);
@@ -319,10 +454,21 @@ fn main() {
                     }
                     None => {}
                 }
+                match keymap.triggers.get(&key_str) {
+                    Some(trigger) => {
+                        controller.release_trigger(trigger);
+                    }
+                    None => {}
+                }
+                match keymap.mods.get(&key_str) {
+                    Some(modifier) => {
+                        controller.release_mod(modifier);
+                    }
+                    None => {}
+                }
             }
             _ => {}
         }
-        println!("{:?}", buttons_held);
     };
 
     if let Err(error) = listen(on_key_press) {

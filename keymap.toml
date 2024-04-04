@@ -4,11 +4,11 @@ B = 'o'
 X = 'k'
 Y = '/'
 Z = 'i'
-START = 'Enter'
-DPAD_UP = 'w'
-DPAD_DOWN = 's'
-DPAD_LEFT = 'a'
-DPAD_RIGHT = 'd'
+START = 'return'
+DPAD_UP = 'uparrow'
+DPAD_DOWN = 'downarrow'
+DPAD_LEFT = 'leftarrow'
+DPAD_RIGHT = 'rightarrow'
 
 [control_stick]
 UP = 'w'
@@ -17,11 +17,15 @@ LEFT = 'a'
 RIGHT = 'd'
 
 [c_stick]
-UP = ';'
-DOWN = ','
+UP = 'semicolon'
+DOWN = 'comma'
 LEFT = 'n'
 RIGHT = 'l'
 
 [triggers]
 L = 'q'
-R = ' ' # space
+R = 'space' 
+
+[mods]
+MOD_Y = 'shiftleft'
+MOD_X = 'shiftright'
