@@ -6,10 +6,9 @@ use std::path::Path;
 
 mod config;
 mod controller;
+mod key_handler;
 mod keycodes;
 mod pipe;
-mod key_handler;
-
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
