@@ -24,35 +24,39 @@ and `<keymap path>` is the path to the `keymap.toml` file. If you don't have one
 `keymap.toml` should have the following format:
 ```toml
 [buttons]
-A = 'j'
-B = 'o'
-X = 'k'
+A = 'J'
+B = 'O'
+X = 'K'
 Y = '/'
-Z = 'i'
-START = 'return'
-DPAD_UP = 'uparrow'
-DPAD_DOWN = 'downarrow'
-DPAD_LEFT = 'leftarrow'
-DPAD_RIGHT = 'rightarrow'
+Z = 'I'
+START = 'Return'
+DPAD_UP = 'UpArrow'
+DPAD_DOWN = 'DownArrow'
+DPAD_LEFT = 'LeftArrow'
+DPAD_RIGHT = 'RightArrow'
 
 [control_stick]
-UP = 'w'
-DOWN = 's'
-LEFT = 'a'
-RIGHT = 'd'
+UP = 'W'
+DOWN = 'S'
+LEFT = 'A'
+RIGHT = 'D'
 
 [c_stick]
-UP = 'semicolon'
-DOWN = 'comma'
-LEFT = 'n'
-RIGHT = 'l'
+UP = ';'
+DOWN = ','
+LEFT = 'N'
+RIGHT = 'L'
 
 [triggers]
-L = 'q'
-R = 'space' 
+L = 'Q'
+R = ' ' 
 
 [mods]
-MOD_Y = 'shiftleft'
-MOD_X = 'shiftright'
+MOD_Y = 'ShiftLeft'
+MOD_X = 'ShiftRight'
 ```
 (shoutout to lord's [layout](https://imgur.com/a/3SmBW) he shared on The Reads)
+
+For non-alphanumeric keys, refer to the [rdev Ken enum](https://docs.rs/rdev/latest/rdev/enum.Key.html).
+All other keys are uppercase letters, or the char they represent.
+
