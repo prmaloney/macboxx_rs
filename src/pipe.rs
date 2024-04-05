@@ -18,6 +18,6 @@ pub fn create_pipe(slippi_path: &Path) -> fs::File {
             panic!("failed to make fifo");
         }
     }
-
+    println!("Connected to slippi!");
     fs::File::create(&pipe_path).unwrap()
 }

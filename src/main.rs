@@ -3,21 +3,30 @@ use crate::controller::StickKind;
 use clap::Parser;
 use ini::Ini;
 use keycodes::Keymap;
-use keycodes::Stringable;
 use rdev::{listen, Event, EventType};
 use std::path::Path;
+use std::io::{stdin, stdout, Read, Write};
 
 mod controller;
 mod keycodes;
 mod pipe;
 
+fn pause(msg: &str) {
+    let mut stdout = stdout();
+    stdout.write(format!("{}\n", msg).as_bytes()).unwrap();
+    stdout.flush().unwrap();
+    stdin().read(&mut [0]).unwrap();
+}
+
 fn setup_config(slippi_path: &String) {
     let config_path = Path::new(&slippi_path).join("User").join("Config");
     let mut gc_config = Ini::load_from_file(config_path.join("GCPadNew.ini")).unwrap();
     let port_1_section = gc_config.section(Some("GCPad1")).unwrap();
-    if port_1_section.get("Device").unwrap() == "Pipe/0/macboxx" {
+    println!("Configuring controller...");
+    if port_1_section.get("Device").unwrap_or("") == "Pipe/0/macboxx" {
         println!("Controller already configured")
     } else {
+        pause("Warning, this will modify your GCPadNew.ini file. Press Enter to continue...");
         gc_config
             .with_section(Some("GCPad1"))
             .set("Device", "Pipe/0/macboxx")
@@ -56,6 +65,7 @@ fn setup_config(slippi_path: &String) {
         gc_config
             .write_to_file(config_path.join("GCPadNew.ini"))
             .unwrap();
+        println!("Controller configured")
     }
 }
 
@@ -96,6 +106,7 @@ fn main() {
                 // see if we pressed a button
                 match keymap.buttons.get(&key_str) {
                     Some(button) => {
+                        println!("{} pressed", button);
                         controller.press_button(button);
                     }
                     None => {}
@@ -135,7 +146,7 @@ fn main() {
             }
 
             EventType::KeyRelease(key) => {
-                let key_str = key.as_string();
+                let key_str = keycodes::get_keycode(key);
                 keys_held.retain(|k| k != &key_str);
                 match keymap.buttons.get(&key_str) {
                     Some(button) => {
