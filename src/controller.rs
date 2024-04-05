@@ -144,7 +144,6 @@ impl Controller {
         }
     }
 
-    // TODO: adjust all this logic
     pub fn tilt_stick(&mut self, stick: StickKind, direction: &str) {
         match stick {
             StickKind::Control => {
