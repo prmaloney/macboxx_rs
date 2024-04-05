@@ -7,7 +7,7 @@ description = "A rust-based boxx-style keyboard mapper, designed for Slippi mele
 repository = "https://github.com/prmaloney/macboxx_rs"
 license = "MIT"
 readme = "README.md"
-keywords = ["slippi", "melee", "keyboard", "mapper", "boxx", "ahk"]
+keywords = ["slippi", "melee", "keyboard", "boxx", "ahk"]
 categories = ["command-line-utilities", "games"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
