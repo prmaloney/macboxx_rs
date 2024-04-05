@@ -17,7 +17,7 @@ cargo install macboxx
 ```bash
 macboxx -s <slippi path> -k <keymap path>
 ```
-Where `<slippi path>` is the path to the slippi netplay directory. On MacOS, this is something like `~/Library/Application\ Support/com.project-slippi.dolphon/netplay`,
+Where `<slippi path>` is the path to the slippi netplay directory. On MacOS, this is something like `~/Library/Application\ Support/com.project-slippi.dolphin/netplay`,
 and `<keymap path>` is the path to the `keymap.toml` file. If you don't have one, one will be created for you in your home directory.
 
 ## Keymap
