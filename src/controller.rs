@@ -1,11 +1,6 @@
 use std::{fmt::Display, fs};
 use std::io::Write;
 
-
-const MOD_X_FACTOR: f32 = 0.5;
-const MOD_DOWN_FACTOR: f32 = 0.5;
-const MOD_UP_FACTOR: f32 = 0.3;
-
 #[derive(Debug, Clone, Copy)]
 pub enum StickKind {
     Control,
@@ -33,16 +28,22 @@ pub struct Controller {
     c_stick: Stick,
     mod_x: bool,
     mod_y: bool,
+    mod_x_factor: f32,
+    mod_up_factor: f32,
+    mod_down_factor: f32,
 }
 
 impl Controller {
-    pub fn new(pipe: fs::File) -> Controller {
+    pub fn new(pipe: fs::File, mod_x_factor: f32, mod_up_factor: f32, mod_down_factor: f32) -> Controller {
         Controller {
             pipe,
             control_stick: Stick { x: 0.0, y: 0.0 },
             c_stick: Stick { x: 0.0, y: 0.0 },
             mod_x: false,
             mod_y: false,
+            mod_x_factor,
+            mod_up_factor,
+            mod_down_factor,
         }
     }
 
@@ -109,16 +110,16 @@ impl Controller {
             StickKind::Control => {
                 let x = Self::convert_coords({
                     if self.mod_x {
-                        stick_data.x * MOD_X_FACTOR
+                        stick_data.x * self.mod_x_factor
                     } else {
                         stick_data.x
                     }
                 });
                 let y = Self::convert_coords({
                     if self.mod_y && self.control_stick.y < 0.0 {
-                        stick_data.y * MOD_DOWN_FACTOR
+                        stick_data.y * self.mod_down_factor
                     } else if self.mod_y {
-                        stick_data.y * MOD_UP_FACTOR
+                        stick_data.y * self.mod_up_factor
                     } else {
                         stick_data.y
                     }

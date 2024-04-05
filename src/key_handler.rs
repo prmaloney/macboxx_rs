@@ -27,7 +27,6 @@ impl KeyHandler {
         // see if we pressed a button
         match self.keymap.buttons.get(&key_str) {
             Some(button) => {
-                println!("{} pressed", button);
                 self.controller.press_button(button);
             }
             None => {}

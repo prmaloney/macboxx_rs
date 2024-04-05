@@ -33,12 +33,20 @@ pub fn get_keycode(key: Key) -> String {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct ModFactors {
+    pub x: f32,
+    pub up: f32,
+    pub down: f32,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct Keymap {
     pub buttons: std::collections::HashMap<String, String>,
     pub control_stick: std::collections::HashMap<String, String>,
     pub c_stick: std::collections::HashMap<String, String>,
     pub triggers: std::collections::HashMap<String, String>,
     pub mods: std::collections::HashMap<String, String>,
+    pub mod_factors: ModFactors,
 }
 
 pub fn setup_keymap(keymap_path: String) -> Result<Keymap, String> {
@@ -74,6 +82,7 @@ pub fn setup_keymap(keymap_path: String) -> Result<Keymap, String> {
                 .iter()
                 .map(|(k, v)| (v.to_string(), k.to_string()))
                 .collect(),
+            mod_factors: k.mod_factors,
         }),
         Err(_) => Err(String::from("Could not parse keymap.toml")),
     }

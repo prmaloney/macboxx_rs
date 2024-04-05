@@ -1,7 +1,7 @@
 [package]
 name = "macboxx"
 authors = ["prmaloney"]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "A rust-based boxx-style keyboard mapper, designed for Slippi melee"
 repository = "https://github.com/prmaloney/macboxx_rs"

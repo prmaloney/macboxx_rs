@@ -31,7 +31,13 @@ fn main() {
     let keymap: Keymap = keycodes::setup_keymap(args.keymap).expect("Failed to load keymap");
 
     let pipe = pipe::create_pipe(&Path::new(&slippi_path).join("User"));
-    let controller = Controller::new(pipe);
+
+    let controller = Controller::new(
+        pipe,
+        keymap.mod_factors.x,
+        keymap.mod_factors.up,
+        keymap.mod_factors.down,
+    );
 
     let mut handler = key_handler::KeyHandler::new(controller, keymap);
 
