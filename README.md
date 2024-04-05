@@ -54,6 +54,11 @@ R = ' '
 [mods]
 MOD_Y = 'ShiftLeft'
 MOD_X = 'ShiftRight'
+
+[mod_factors]
+x = 0.5
+down = 0.42
+up = 0.4
 ```
 (shoutout to lord's [layout](https://imgur.com/a/3SmBW) he shared on The Reads)
 
