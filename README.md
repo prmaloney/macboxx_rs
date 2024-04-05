@@ -1,7 +1,7 @@
 
 # Macboxx_rs
 
-rewrite it in rust
+A hopefully more performant rewrite of [macboxx](https://github.com/prmaloney/macboxx).
 
 ## Summary
 A virtual controller to interact with slippi dolphin.
@@ -57,6 +57,6 @@ MOD_X = 'ShiftRight'
 ```
 (shoutout to lord's [layout](https://imgur.com/a/3SmBW) he shared on The Reads)
 
-For non-alphanumeric keys, refer to the [rdev Ken enum](https://docs.rs/rdev/latest/rdev/enum.Key.html).
+For non-alphanumeric keys, refer to the [rdev Key enum](https://docs.rs/rdev/latest/rdev/enum.Key.html).
 All other keys are uppercase letters, or the char they represent.
 
