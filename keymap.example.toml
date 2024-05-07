@@ -1,0 +1,39 @@
+# This is an example keymap file. You can use this as a starting point for your own keymaps.
+
+[buttons]
+A = 'J'
+B = 'O'
+X = 'K'
+Y = '/'
+Z = 'I'
+START = 'Return'
+D_UP = 'UpArrow'
+D_DOWN = 'DownArrow'
+D_LEFT = 'LeftArrow'
+D_RIGHT = 'RightArrow'
+
+[control_stick]
+UP = 'W'
+DOWN = 'S'
+LEFT = 'A'
+RIGHT = 'D'
+
+[c_stick]
+UP = ';'
+DOWN = ','
+LEFT = 'N'
+RIGHT = 'L'
+
+[triggers]
+L = 'Q'
+R = ' ' 
+
+[mods]
+MOD_Y = 'ShiftLeft'
+MOD_X = 'ShiftRight'
+
+[mod_factors]
+x = 0.4
+down = 0.42
+up = 0.4
+
