@@ -17,6 +17,58 @@ impl Display for StickKind {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+impl Display for Direction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Direction::Up => write!(f, "UP"),
+            Direction::Down => write!(f, "DOWN"),
+            Direction::Left => write!(f, "LEFT"),
+            Direction::Right => write!(f, "RIGHT"),
+        }
+    }
+}
+
+impl Direction {
+    pub fn as_string(&self) -> String {
+        match self {
+            Direction::Up => "UP".to_string(),
+            Direction::Down => "DOWN".to_string(),
+            Direction::Left => "LEFT".to_string(),
+            Direction::Right => "RIGHT".to_string(),
+        }
+    }
+}
+
+impl Direction {
+    pub fn opposite(self) -> Direction {
+        match self {
+            Direction::Up => Direction::Down,
+            Direction::Down => Direction::Up,
+            Direction::Left => Direction::Right,
+            Direction::Right => Direction::Left,
+        }
+    }
+
+    pub fn from_string(s: &str) -> Direction {
+        match s {
+            "UP" => Direction::Up,
+            "DOWN" => Direction::Down,
+            "LEFT" => Direction::Left,
+            "RIGHT" => Direction::Right,
+            _ => panic!("Unknown direction: {}", s),
+        }
+    }
+}
+
+
+#[derive(Debug, Clone, Copy)]
 pub struct Stick {
     x: f32,
     y: f32,
@@ -144,68 +196,66 @@ impl Controller {
         }
     }
 
-    pub fn tilt_stick(&mut self, stick: StickKind, direction: &str) {
+    pub fn tilt_stick(&mut self, stick: StickKind, direction: Direction) {
         match stick {
             StickKind::Control => {
                 self.control_stick = match direction {
-                    "UP" => Stick {
+                    Direction::Up => Stick {
                         y: 1.0,
                         x: self.control_stick.x,
                     },
-                    "DOWN" => Stick {
+                    Direction::Down => Stick {
                         y: -1.0,
                         x: self.control_stick.x,
                     },
-                    "LEFT" => Stick {
+                    Direction::Left => Stick {
                         x: -1.0,
                         y: self.control_stick.y,
                     },
-                    "RIGHT" => Stick {
+                    Direction::Right => Stick {
                         x: 1.0,
                         y: self.control_stick.y,
                     },
-                    _ => self.control_stick,
                 };
                 self.write_stick(StickKind::Control, self.control_stick);
             }
             StickKind::C => {
                 self.c_stick = match direction {
-                    "UP" => Stick {
+                    Direction::Up => Stick {
                         x: self.c_stick.x,
                         y: 1.0,
                     },
-                    "DOWN" => Stick {
+                    Direction::Down => Stick {
                         x: self.c_stick.x,
                         y: -1.0,
                     },
-                    "LEFT" => Stick {
+                    Direction::Left => Stick {
                         x: -1.0,
                         y: self.c_stick.y,
                     },
-                    "RIGHT" => Stick {
+                    Direction::Right => Stick {
                         x: 1.0,
                         y: self.c_stick.y,
                     },
-                    _ => self.c_stick,
                 };
                 self.write_stick(StickKind::C, self.c_stick);
             }
         }
     }
 
-    pub fn release_direction(&mut self, stick: StickKind, direction: &str) {
+    pub fn release_direction(&mut self, stick: StickKind, direction: Direction) {
         match stick {
             StickKind::Control => {
                 self.control_stick = match direction {
-                    "UP" => Stick {
+                    Direction::Up => Stick {
                         x: self.control_stick.x,
                         y: 0.0,
                     },
-                    "DOWN" => Stick {
+                    Direction::Down => Stick {
                         x: self.control_stick.x,
                         y: 0.0,
                     },
-                    "LEFT" => Stick {
+                    Direction::Left => Stick {
                         x: if self.control_stick.x > 0.0 {
                             self.control_stick.x
                         } else {
@@ -213,7 +263,7 @@ impl Controller {
                         },
                         y: self.control_stick.y,
                     },
-                    "RIGHT" => Stick {
+                    Direction::Right => Stick {
                         x: if self.control_stick.x < 0.0 {
                             self.control_stick.x
                         } else {
@@ -221,30 +271,28 @@ impl Controller {
                         },
                         y: self.control_stick.y,
                     },
-                    _ => self.control_stick,
                 };
                 self.write_stick(StickKind::Control, self.control_stick);
             }
 
             StickKind::C => {
                 self.c_stick = match direction {
-                    "UP" => Stick {
+                    Direction::Up => Stick {
                         x: self.c_stick.x,
                         y: 0.0,
                     },
-                    "DOWN" => Stick {
+                    Direction::Down => Stick {
                         x: self.c_stick.x,
                         y: 0.0,
                     },
-                    "LEFT" => Stick {
+                    Direction::Left => Stick {
                         x: 0.0,
                         y: self.c_stick.y,
                     },
-                    "RIGHT" => Stick {
+                    Direction::Right => Stick {
                         x: 0.0,
                         y: self.c_stick.y,
                     },
-                    _ => self.c_stick,
                 };
                 self.write_stick(StickKind::C, self.c_stick);
             }

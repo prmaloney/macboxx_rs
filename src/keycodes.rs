@@ -1,7 +1,6 @@
-use std::fs;
-
 use rdev::Key;
 use serde_derive::Deserialize;
+use std::fs;
 
 pub(crate) trait Stringable {
     fn as_string(&self) -> String;
@@ -32,14 +31,14 @@ pub fn get_keycode(key: Key) -> String {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct ModFactors {
     pub x: f32,
     pub up: f32,
     pub down: f32,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Keymap {
     pub buttons: std::collections::HashMap<String, String>,
     pub control_stick: std::collections::HashMap<String, String>,
