@@ -15,10 +15,14 @@ pub fn setup_config(slippi_path: &String) {
     let gc_config = match Ini::load_from_file(&gc_config_path) {
         // If the file exists, return the Ini object
         Ok(config) => config,
-        // If the file doesn't exist, create a new one
-        Err(_) => {
-            pause("GCPadNew.ini not found. Press Enter to create a new one...");
-            create_gc_config(gc_config_path.clone())
+        Err(e) => {
+            // If the file doesn't exist, create a new one
+            if e.to_string().contains("No such file or directory") {
+                pause("GCPadNew.ini not found. Press Enter to create a new one...");
+                create_gc_config(gc_config_path.clone())
+            } else {
+                panic!("Error loading GCPadNew.ini: {}", e)
+            }
         }
     };
     let port_1_section = gc_config.section(Some("GCPad1")).unwrap();
