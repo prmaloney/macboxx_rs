@@ -1,5 +1,5 @@
 use ini::Ini;
-use std::{io::{stdin, stdout, Read, Write}, path::{Path, PathBuf}};
+use std::{io::{stdin, stdout, Read, Write}, path::Path};
 
 fn pause(msg: &str) {
     let mut stdout = stdout();
@@ -10,21 +10,7 @@ fn pause(msg: &str) {
 
 pub fn setup_config(slippi_path: &String) {
     let config_path = Path::new(&slippi_path).join("User").join("Config");
-    let gc_config_path = config_path.join("GCPadNew.ini");
-    // Try and load the GCPadNew.ini file
-    let gc_config = match Ini::load_from_file(&gc_config_path) {
-        // If the file exists, return the Ini object
-        Ok(config) => config,
-        Err(e) => {
-            // If the file doesn't exist, create a new one
-            if e.to_string().contains("No such file or directory") {
-                pause("GCPadNew.ini not found. Press Enter to create a new one...");
-                create_gc_config(gc_config_path.clone())
-            } else {
-                panic!("Error loading GCPadNew.ini: {}", e)
-            }
-        }
-    };
+    let mut gc_config = Ini::load_from_file(config_path.join("GCPadNew.ini")).unwrap();
     let port_1_section = gc_config.section(Some("GCPad1")).unwrap();
 
     println!("Configuring controller...");
@@ -33,15 +19,8 @@ pub fn setup_config(slippi_path: &String) {
         println!("Controller already configured")
     } else {
         pause("Warning, this will modify your GCPadNew.ini file. Press Enter to continue...");
-
-        create_gc_config(gc_config_path);
-        println!("Controller configured")
-    }
-}
-
-fn create_gc_config(file_path: PathBuf) -> Ini{
-    let mut gc_config = Ini::new();
-    gc_config.with_section(Some("GCPad1"))
+        gc_config
+            .with_section(Some("GCPad1"))
             .set("Device", "Pipe/0/macboxx")
             .set("Buttons/A", "Button A")
             .set("Buttons/B", "Button B")
@@ -75,6 +54,9 @@ fn create_gc_config(file_path: PathBuf) -> Ini{
             .set("Triggers/R-Analog", "Axis R -+")
             .set("Triggers/Threshold", "90.00000000000000");
 
-    gc_config.write_to_file(file_path).unwrap();
-    gc_config // Return the Ini object
+        gc_config
+            .write_to_file(config_path.join("GCPadNew.ini"))
+            .unwrap();
+        println!("Controller configured")
+    }
 }
