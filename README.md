@@ -5,7 +5,7 @@ A hopefully more performant rewrite of [macboxx](https://github.com/prmaloney/ma
 
 ## Summary
 A virtual controller to interact with slippi dolphin.
-!(https://github.com/agirardeau/b0xx-ahk)[boxx-ahk] runs only on windows and this would give support for boxx-y controller mappings to other platform users.
+[b0xx-ahk](https://github.com/agirardeau/b0xx-ahk) runs only on windows and this would give support for b0xx-y controller mappings to other platform users.
 
 ## Installation
 Install with cargo:
