@@ -3,22 +3,12 @@ use std::{io::{stdin, stdout, Read, Write}, path::Path};
 
 fn pause(msg: &str) {
     let mut stdout = stdout();
-    stdout.write(format!("{}\n", msg).as_bytes()).unwrap();
+    stdout.write_all(format!("{}\n", msg).as_bytes()).unwrap();
     stdout.flush().unwrap();
-    stdin().read(&mut [0]).unwrap();
+    stdin().read_exact(&mut [0]).unwrap();
 }
 
-pub fn setup_config(slippi_path: &String) {
-    let config_path = Path::new(&slippi_path).join("User").join("Config");
-    let mut gc_config = Ini::load_from_file(config_path.join("GCPadNew.ini")).unwrap();
-    let port_1_section = gc_config.section(Some("GCPad1")).unwrap();
-
-    println!("Configuring controller...");
-
-    if port_1_section.get("Device").unwrap_or("") == "Pipe/0/macboxx" {
-        println!("Controller already configured")
-    } else {
-        pause("Warning, this will modify your GCPadNew.ini file. Press Enter to continue...");
+fn setup_inputs(gc_config: &mut Ini, config_path: &Path) {
         gc_config
             .with_section(Some("GCPad1"))
             .set("Device", "Pipe/0/macboxx")
@@ -58,5 +48,31 @@ pub fn setup_config(slippi_path: &String) {
             .write_to_file(config_path.join("GCPadNew.ini"))
             .unwrap();
         println!("Controller configured")
+}
+
+pub fn setup_config(slippi_path: &String) {
+    let config_path = Path::new(&slippi_path).join("User").join("Config");
+    let mut gc_config = match (config_path.join("GCPadNew.ini")).exists() {
+        true => {
+            println!("Config file already exists");
+            Ini::load_from_file(config_path.join("GCPadNew.ini")).unwrap()
+        }
+        false => {
+            println!("Config file does not exist");
+            let mut new_config = Ini::new();
+            setup_inputs(&mut new_config, &config_path);
+            let _ = new_config.write_to_file(config_path.join("GCPadNew.ini"));
+            new_config
+        }
+    };
+    let port_1_section = gc_config.section(Some("GCPad1")).unwrap();
+
+    println!("Configuring controller...");
+
+    if port_1_section.get("Device").unwrap_or("") == "Pipe/0/macboxx" {
+        println!("Controller already configured")
+    } else {
+        pause("Warning, this will modify your GCPadNew.ini file. Press Enter to continue...");
+        setup_inputs(&mut gc_config, &config_path);
     }
 }

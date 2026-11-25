@@ -100,27 +100,23 @@ impl Controller {
     }
 
     pub fn press_button(&mut self, button: &str) {
-        let _ = self
-            .pipe
-            .write(format!("PRESS {}\n", button.to_string()).as_bytes());
+        let msg = format!("PRESS {}\n", button);
+        let _ = self.pipe.write(msg.as_bytes());
     }
 
     pub fn release_button(&mut self, button: &str) {
-        let _ = self
-            .pipe
-            .write(format!("RELEASE {}\n", button.to_string()).as_bytes());
+        let msg = format!("RELEASE {}\n", button);
+        let _ = self.pipe.write(msg.as_bytes());
     }
 
     pub fn press_trigger(&mut self, trigger: &str) {
-        let _ = self
-            .pipe
-            .write(format!("PRESS {}\n", trigger.to_string()).as_bytes());
+        let msg = format!("PRESS {}\n", trigger);
+        let _ = self.pipe.write(msg.as_bytes());
     }
 
     pub fn release_trigger(&mut self, trigger: &str) {
-        let _ = self
-            .pipe
-            .write(format!("RELEASE {}\n", trigger.to_string()).as_bytes());
+        let msg = format!("RELEASE {}\n", trigger);
+        let _ = self.pipe.write(msg.as_bytes());
     }
 
     pub fn press_mod(&mut self, axis: &str) {
@@ -176,22 +172,21 @@ impl Controller {
                         stick_data.y
                     }
                 });
-                self.pipe
-                    .write(format!("SET {} {} {}\n", stick, x, y).as_bytes())
-                    .unwrap();
+                let msg = format!("SET {} {} {}\n", stick, x, y);
+                if let Err(e) = self.pipe.write(msg.as_bytes()) {
+                    eprintln!("Failed to write to pipe: {}", e);
+                }
             }
             StickKind::C => {
-                self.pipe
-                    .write(
-                        format!(
-                            "SET {} {} {}\n",
-                            stick,
-                            Self::convert_coords(stick_data.x),
-                            Self::convert_coords(stick_data.y)
-                        )
-                        .as_bytes(),
-                    )
-                    .unwrap();
+                let msg = format!(
+                    "SET {} {} {}\n",
+                    stick,
+                    Self::convert_coords(stick_data.x),
+                    Self::convert_coords(stick_data.y)
+                );
+                if let Err(e) = self.pipe.write(msg.as_bytes()) {
+                    eprintln!("Failed to write to pipe: {}", e);
+                }
             }
         }
     }

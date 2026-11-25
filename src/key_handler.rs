@@ -31,89 +31,59 @@ impl KeyHandler {
         self.keys_held.push(key_str.clone());
 
         // see if we pressed a button
-        match self.keymap.buttons.get(&key_str) {
-            Some(button) => {
-                self.controller.press_button(button);
-            }
-            None => {}
+        if let Some(button) = self.keymap.buttons.get(&key_str) {
+            self.controller.press_button(button);
         }
 
         // see if we pressed the control stick
-        match self.keymap.control_stick.get(&key_str) {
-            Some(dir) => {
-                self.controller
-                    .tilt_stick(StickKind::Control, Direction::from_string(dir));
-            }
-            None => {}
+        if let Some(dir) = self.keymap.control_stick.get(&key_str) {
+            self.controller
+                .tilt_stick(StickKind::Control, Direction::from_string(dir));
         }
 
         // see if we pressed the c stick
-        match self.keymap.c_stick.get(&key_str) {
-            Some(dir) => {
-                self.controller
-                    .tilt_stick(StickKind::C, Direction::from_string(dir));
-            }
-            None => {}
+        if let Some(dir) = self.keymap.c_stick.get(&key_str) {
+            self.controller
+                .tilt_stick(StickKind::C, Direction::from_string(dir));
         }
 
         // see if we pressed a trigger
-        match self.keymap.triggers.get(&key_str) {
-            Some(trigger) => {
-                self.controller.press_trigger(trigger);
-            }
-            None => {}
+        if let Some(trigger) = self.keymap.triggers.get(&key_str) {
+            self.controller.press_trigger(trigger);
         }
 
         // see if we pressed a modifier
-        match self.keymap.mods.get(&key_str) {
-            Some(modifier) => {
-                self.controller.press_mod(modifier);
-            }
-            None => {}
+        if let Some(modifier) = self.keymap.mods.get(&key_str) {
+            self.controller.press_mod(modifier);
         }
     }
 
     pub fn on_release(&mut self, key: rdev::Key) {
         let key_str = keycodes::get_keycode(key);
         self.keys_held.retain(|k| k != &key_str);
-        match self.keymap.buttons.get(&key_str) {
-            Some(button) => {
-                self.controller.release_button(button);
-            }
-            None => {}
+        if let Some(button) = self.keymap.buttons.get(&key_str) {
+            self.controller.release_button(button);
         }
-        match self.keymap.control_stick.get(&key_str) {
-            Some(dir_string) => {
-                let dir: Direction = Direction::from_string(dir_string);
-                if let Some(opposite_key) = self.control_stick_reverse.get(&dir.opposite().as_string()) {
-                    if self.keys_held.contains(opposite_key) {
-                        self.controller
-                            .tilt_stick(StickKind::Control, dir.opposite())
-                    } else {
-                        self.controller.release_direction(StickKind::Control, dir);
-                    }
+        if let Some(dir_string) = self.keymap.control_stick.get(&key_str) {
+            let dir: Direction = Direction::from_string(dir_string);
+            if let Some(opposite_key) = self.control_stick_reverse.get(&dir.opposite().as_string()) {
+                if self.keys_held.contains(opposite_key) {
+                    self.controller
+                        .tilt_stick(StickKind::Control, dir.opposite())
+                } else {
+                    self.controller.release_direction(StickKind::Control, dir);
                 }
             }
-            None => {}
         }
-        match self.keymap.c_stick.get(&key_str) {
-            Some(dir) => {
-                self.controller
-                    .release_direction(StickKind::C, Direction::from_string(dir));
-            }
-            None => {}
+        if let Some(dir) = self.keymap.c_stick.get(&key_str) {
+            self.controller
+                .release_direction(StickKind::C, Direction::from_string(dir));
         }
-        match self.keymap.triggers.get(&key_str) {
-            Some(trigger) => {
-                self.controller.release_trigger(trigger);
-            }
-            None => {}
+        if let Some(trigger) = self.keymap.triggers.get(&key_str) {
+            self.controller.release_trigger(trigger);
         }
-        match self.keymap.mods.get(&key_str) {
-            Some(modifier) => {
-                self.controller.release_mod(modifier);
-            }
-            None => {}
+        if let Some(modifier) = self.keymap.mods.get(&key_str) {
+            self.controller.release_mod(modifier);
         }
     }
 }
